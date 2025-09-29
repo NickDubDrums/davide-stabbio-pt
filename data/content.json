@@ -1,0 +1,37 @@
+{
+  "site": {
+    "title": "Davide Stabbio — Personal Trainer",
+    "tagline": "Performance, postura, risultati reali.",
+    "logoVariant": "gold-on-dark"
+  },
+  "hero": {
+    "headline": "Allenati al tuo livello, supera i tuoi limiti",
+    "subheadline": "Programmi personalizzati e valutazioni su misura",
+    "ctaText": "Contattami",
+    "ctaLink": "/contact.html",
+    "image": "/assets/images/hero-placeholder.jpg"
+  },
+  "about": {
+    "name": "Davide Stabbio",
+    "bio": "Nato nel 1998 a Ciriè, laureato in Scienze Motorie nel 2020 e specializzato in Scienze e Tecniche avanzate dello Sport nel 2023. Dal 2024 si è unito al team ZA. Lavora come Personal Trainer presso Next Wellness Club di Sedime. Attualmente sta seguendo un corso di Posturologia.",
+    "portrait": "/assets/images/davide-portrait.jpg",
+    "cv": [
+      { "title": "Laurea in Scienze Motorie", "subtitle": "Università — 2020", "text": "" },
+      { "title": "Spec. Scienze e Tecniche avanzate dello Sport", "subtitle": "Università — 2023", "text": "" },
+      { "title": "Team ZA", "subtitle": "Dal 2024", "text": "" },
+      { "title": "Personal Trainer", "subtitle": "Next Wellness Club (Sedime)", "text": "" },
+      { "title": "Corso di Posturologia", "subtitle": "In corso", "text": "" }
+    ]
+  },
+  "services": [
+    { "title": "Personal Training 1:1", "text": "Sessioni su misura con focus su obiettivi concreti." },
+    { "title": "Programmazione", "text": "Piani progressivi basati su evidenze e feedback." },
+    { "title": "Valutazione Posturale", "text": "Screening posturale e consigli pratici." }
+  ],
+  "contact": {
+    "email": "contatto@example.com",
+    "phone": "+39 000 000 0000",
+    "instagram": "https://instagram.com/username",
+    "location": "Torino, Italia"
+  }
+}

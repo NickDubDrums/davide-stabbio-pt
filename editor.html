@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="it">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Editor — Area riservata</title>
+    <meta name="robots" content="noindex,nofollow">
+
+    <link href="https://api.fontshare.com/v2/css?f[]=supreme@300,400,500,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/theme-dark-gold.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            background: #16161a;
+            color: var(--text);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab-btn[aria-selected="true"] {
+            background: linear-gradient(180deg, var(--gold), var(--gold-2));
+            color: #0b0b0d;
+            border: none;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel[aria-hidden="false"] {
+            display: block;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .row {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .row-3 {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .cv-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #141417;
+            padding: 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .cv-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .cv-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .big-add {
+            margin-top: 16px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px dashed var(--gold-2);
+            background: #1a1a1f;
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin: 14px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="/"><span class="badge-gold">DS</span> Davide Stabbio</a>
+            <nav><a class="link-underline" href="/">← Torna al sito</a></nav>
+        </div>
+    </header>
+
+    <main class="section container">
+        <!-- Gate -->
+        <section id="gate" class="surface" style="padding:24px; max-width:880px; margin:auto;">
+            <h1 style="margin-top:0;">Editor — Accesso</h1>
+            <form id="login-form" class="grid">
+                <input class="card" type="password" name="password" placeholder="Password" required>
+                <button class="btn btn-primary" type="submit">Entra</button>
+            </form>
+            <p id="status" class="muted" style="margin-top:12px;"></p>
+            <details style="margin-top:10px;">
+                <summary class="muted">Opzione extra sicurezza</summary>
+                <p class="muted">Puoi richiedere anche un token nell'URL (es. <code>?k=...</code>). Vedi
+                    <code>/js/editor.js</code>.
+                </p>
+            </details>
+        </section>
+
+        <!-- App -->
+        <section id="app" class="surface" style="padding:24px; max-width:1000px; margin:auto;" hidden>
+            <h1 style="margin:0 0 8px;">Editor contenuti</h1>
+            <p class="muted">Modifica i campi e poi scarica <code>content.json</code>. Caricalo su GitHub nella cartella
+                <code>/data/</code>.
+            </p>
+
+            <div class="toolbar">
+                <div>
+                    <button id="download" class="btn btn-primary">Scarica content.json</button>
+                    <label class="btn" style="margin-left:8px;">
+                        <input id="import" type="file" accept="application/json" hidden> Importa JSON…
+                    </label>
+                </div>
+                <small class="muted">Suggerimento: aggiorna immagini usando URL (Instagram/CDN). Nessun upload diretto
+                    su GitHub Pages.</small>
+            </div>
+
+            <div class="tabs" role="tablist">
+                <button class="tab-btn" role="tab" id="tab-home" aria-controls="panel-home"
+                    aria-selected="true">Home</button>
+                <button class="tab-btn" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false">Su
+                    di me</button>
+            </div>
+
+            <!-- HOME -->
+            <section class="panel" id="panel-home" role="tabpanel" aria-labelledby="tab-home" aria-hidden="false">
+                <h2>Hero</h2>
+                <div class="field">
+                    <label for="hero.headline">Titolo (headline)</label>
+                    <input class="card" id="hero.headline" name="hero.headline" placeholder="Titolo principale">
+                </div>
+                <div class="field">
+                    <label for="hero.subheadline">Sottotitolo</label>
+                    <textarea class="card" id="hero.subheadline" name="hero.subheadline" rows="3"
+                        placeholder="Sottotitolo"></textarea>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <label for="hero.ctaText">CTA testo</label>
+                        <input class="card" id="hero.ctaText" name="hero.ctaText" placeholder="Es: Contattami">
+                    </div>
+                    <div class="field">
+                        <label for="hero.ctaLink">CTA link</label>
+                        <input class="card" id="hero.ctaLink" name="hero.ctaLink" placeholder="/contact.html">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="hero.image">Immagine Hero (URL)</label>
+                    <input class="card" id="hero.image" name="hero.image" placeholder="/assets/images/hero.jpg">
+                </div>
+
+                <hr class="gold" style="margin:20px 0;">
+                <h2>Servizi (fissi)</h2>
+                <div id="services-editor" class="row"></div>
+            </section>
+
+            <!-- ABOUT -->
+            <section class="panel" id="panel-about" role="tabpanel" aria-labelledby="tab-about" aria-hidden="true">
+                <h2>Profilo</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="about.name">Nome</label>
+                        <input class="card" id="about.name" name="about.name" placeholder="Nome">
+                    </div>
+                    <div class="field">
+                        <label for="about.portrait">Ritratto (URL)</label>
+                        <input class="card" id="about.portrait" name="about.portrait"
+                            placeholder="/assets/images/davide.jpg">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="about.bio">Bio</label>
+                    <textarea class="card" id="about.bio" name="about.bio" rows="5" placeholder="Biografia"></textarea>
+                </div>
+
+                <hr class="gold" style="margin:20px 0;">
+                <h2>Percorso &amp; Certificazioni (CV)</h2>
+                <div id="cv-list-editor" class="cv-list"></div>
+                <button id="cv-add" class="big-add">+ Aggiungi voce</button>
+            </section>
+        </section>
+    </main>
+
+    <script src="js/editor.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+/* Accenti e micro-interazioni oro */
+a, .text-gold { color: var(--gold); }
+hr.gold { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+.link-underline { position:relative; text-decoration:none; color: var(--text); }
+.link-underline::after{
+  content:""; position:absolute; left:0; right:100%; bottom:-2px; height:2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  transition: right .28s ease;
+}
+.link-underline:hover::after{ right:0; }

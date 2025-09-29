@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="it">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home — Davide Stabbio</title>
+
+    <!-- Fontshare Supreme -->
+    <link href="https://api.fontshare.com/v2/css?f[]=supreme@300,400,500,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/theme-dark-gold.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="/"><span class="badge-gold">DS</span> Davide Stabbio</a>
+
+            <!-- Desktop -->
+            <nav class="nav-desktop">
+                <a class="navlink link-underline" href="about.html">Su di me</a>
+                <a class="navlink link-underline" href="contact.html">Contatti</a>
+            </nav>
+
+            <!-- Mobile toggle -->
+            <button class="nav-toggle" aria-expanded="false" aria-controls="nav-panel" data-menu-toggle>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+        </div>
+
+        <!-- Offcanvas mobile -->
+        <aside id="nav-panel" class="offcanvas" aria-hidden="true">
+            <nav class="offcanvas-nav">
+                <a class="navlink link-underline" href="about.html">Su di me</a>
+                <a class="navlink link-underline" href="contact.html">Contatti</a>
+            </nav>
+        </aside>
+        <div class="backdrop" data-close-nav></div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero__bg" style="background-image:url('/assets/images/hero-placeholder.jpg')" data-parallax
+                data-speed="0.15"></div>
+            <div class="hero__overlay"></div>
+            <div class="hero__content">
+                <div class="container">
+                    <h1 data-content="hero.headline" data-reveal="up"></h1>
+                    <p data-content="hero.subheadline" data-reveal="up"></p>
+                    <a class="btn btn-primary" data-reveal="up" data-href="hero.ctaLink" href="contact.html">
+                        <span data-content="hero.ctaText">Contattami</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="reveal" data-reveal="up">Servizi</h2>
+                <div class="grid grid-3" id="services ">
+                    <!-- render da content.json -->
+                </div>
+            </div>
+        </section>
+
+        <section data-reveal="left" class="section">
+            <div class="container surface reveal" style="padding:28px;" data-stagger="60">
+                <h2 style="margin-top:0;">Chi sono</h2>
+                <p data-content="about.bio"></p>
+                <a class="btn" href="about.html">Scopri di più</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            © <span id="y"></span> Davide Stabbio — <a class="link-underline"
+                href="https://instagram.com/username">Instagram</a>
+        </div>
+    </footer>
+
+    <script src="js/content.js"></script>
+    <script src="js/scroll.js"></script>
+    <script src="js/parallax.js"></script>
+    <script src="js/ui.js"></script>
+
+    <script>
+        (async function () {
+            const res = await fetch('data/content.json', { cache: 'no-store' });
+            const data = await res.json();
+            const wrap = document.getElementById('services');
+            wrap.innerHTML = data.services.map(s => `
+      <article class="card" data-reveal="up">
+        <h3>${s.title}</h3>
+        <p>${s.text}</p>
+      </article>
+    `).join('');
+            document.getElementById('y').textContent = new Date().getFullYear();
+        })();
+    </script>
+
+</body>
+
+</html>

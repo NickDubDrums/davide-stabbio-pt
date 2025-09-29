@@ -1,0 +1,64 @@
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Reveal engine (varianti via [data-reveal]) */
+[data-reveal] {
+    opacity: 0;
+    transform: var(--reveal-tf, translateY(12px));
+    filter: var(--reveal-filter, none);
+    transition:
+        opacity 700ms cubic-bezier(.2, .7, 0, 1),
+        transform 700ms cubic-bezier(.2, .7, 0, 1),
+        filter 700ms cubic-bezier(.2, .7, 0, 1);
+    will-change: transform, opacity, filter;
+}
+
+[data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+/* Varianti */
+[data-reveal="up"] {
+    --reveal-tf: translateY(16px);
+}
+
+[data-reveal="down"] {
+    --reveal-tf: translateY(-16px);
+}
+
+[data-reveal="left"] {
+    --reveal-tf: translateX(18px);
+}
+
+[data-reveal="right"] {
+    --reveal-tf: translateX(-18px);
+}
+
+[data-reveal="scale"] {
+    --reveal-tf: scale(.96);
+}
+
+[data-reveal="blur"] {
+    --reveal-filter: blur(6px);
+}
+
+[data-reveal="fade"] {
+    --reveal-tf: none;
+}
+
+/* Stagger container: [data-stagger="80"] => 80ms step */
+[data-stagger]>*[data-reveal] {
+    transition-delay: calc(var(--base, 0ms) + (var(--i, 0) * 1ms));
+}
+
+.card:hover {
+    box-shadow: 0 20px 60px #efbf041a, inset 0 1px 0 #ffffff08;
+    border-color: #ffffff14;
+}
