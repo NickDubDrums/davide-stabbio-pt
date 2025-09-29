@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Contatti — Davide Stabbio</title>
+
     <link href="https://api.fontshare.com/v2/css?f[]=supreme@300,400,500,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/theme-dark-gold.css">
@@ -14,23 +15,16 @@
 <body>
     <header class="site-header">
         <div class="container nav">
-            <a class="brand" href="/"><span class="badge-gold">DS</span> Davide Stabbio</a>
-
-            <!-- Desktop -->
+            <a class="brand" href="./"><span class="badge-gold">DS</span> Davide Stabbio</a>
             <nav class="nav-desktop">
                 <a class="navlink link-underline" href="about.html">Su di me</a>
                 <a class="navlink link-underline" href="contact.html">Contatti</a>
             </nav>
-
-            <!-- Mobile toggle -->
             <button class="nav-toggle" aria-expanded="false" aria-controls="nav-panel" data-menu-toggle>
-                <span class="nav-toggle-bar"></span>
-                <span class="nav-toggle-bar"></span>
-                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span
+                    class="nav-toggle-bar"></span>
             </button>
         </div>
-
-        <!-- Offcanvas mobile -->
         <aside id="nav-panel" class="offcanvas" aria-hidden="true">
             <nav class="offcanvas-nav">
                 <a class="navlink link-underline" href="about.html">Su di me</a>
@@ -42,17 +36,17 @@
 
     <main class="section">
         <div class="container grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="surface reveal" style="padding:24px;">
+            <div class="surface" style="padding:24px;" data-reveal="up">
                 <h1>Contatti</h1>
                 <p><strong>Email:</strong> <a class="link-underline" data-content="contact.email"
-                        data-href="contact.email" href="mailto:contatto@example.com">contatto@example.com</a></p>
-                <p><strong>Telefono:</strong> <span data-content="contact.phone">+39 000 000 0000</span></p>
+                        data-href="contact.email" href="#">—</a></p>
+                <p><strong>Telefono:</strong> <span data-content="contact.phone">—</span></p>
                 <p><strong>Instagram:</strong> <a class="link-underline" data-href="contact.instagram"
-                        href="https://instagram.com/username">Instagram</a></p>
-                <p><strong>Località:</strong> <span data-content="contact.location">Torino, Italia</span></p>
+                        href="#">Instagram</a></p>
+                <p><strong>Località:</strong> <span data-content="contact.location">—</span></p>
             </div>
 
-            <form id="contact-form" class="surface reveal" style="padding:24px;">
+            <form id="contact-form" class="surface" style="padding:24px;" data-reveal="up">
                 <h2 style="margin-top:0">Scrivimi</h2>
                 <p class="muted">Compila il form e ti risponderò al più presto.</p>
                 <div class="grid">
@@ -71,12 +65,11 @@
         <div class="container">© <span id="y"></span> Davide Stabbio</div>
     </footer>
 
-    <script src="js/content.js"></script>
-    <script src="js/scroll.js"></script>
-    <script src="js/parallax.js"></script>
-    <script src="js/ui.js"></script>
-
     <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+    <script type="module" src="js/content.js"></script>
+    <script src="js/forms.js"></script>
+    <script src="js/scroll.js"></script>
+    <script src="js/ui.js"></script>
 </body>
 
 </html>

@@ -276,6 +276,11 @@ body {
     margin-top: 10px;
 }
 
+#nav-panel {
+    z-index: 9999;
+    height: 100vh;
+}
+
 .offcanvas .navlink {
     font-size: 18px;
     color: var(--text);
@@ -289,7 +294,8 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity .2s ease;
-    z-index: 55;
+    z-index: 5555;
+    height: 100vh;
 }
 
 /* Stato aperto */
