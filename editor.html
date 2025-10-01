@@ -114,6 +114,12 @@
             align-items: center;
             margin: 14px 0;
         }
+
+        @media (max-width: 900px) {
+            .row {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 
@@ -142,7 +148,7 @@
         <section id="app" class="surface" style="padding:24px; max-width:1000px; margin:auto;" hidden>
             <h1 style="margin:0 0 8px;">Editor contenuti</h1>
             <div>
-                <button id="save-rt" class="btn" style="margin-left:8px;">💾 Salva online</button>
+                <button id="save-rt" class="btn" style="margin-left:0px;">💾 Salva online</button>
                 <span id="save-status" class="muted" style="margin-left:8px;"></span>
             </div>
 
@@ -178,7 +184,7 @@
                         <input class="card" id="hero.ctaLink" name="hero.ctaLink" placeholder="/contact.html">
                     </div>
                 </div>
-                <div class="field">
+                <!--<div class="field">
                     <label for="hero.image">Immagine Hero (URL)</label>
                     <input class="card" id="hero.image" name="hero.image" placeholder="/assets/images/hero.jpg">
                     <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
@@ -186,7 +192,7 @@
                         <button type="button" class="btn" id="upload-hero">Carica immagine</button>
                         <span class="muted" id="hero-upload-status"></span>
                     </div>
-                </div>
+                </div>-->
 
                 <hr class="gold" style="margin:20px 0;">
                 <h2>Servizi (fissi)</h2>
@@ -201,7 +207,7 @@
                         <label for="about.name">Nome</label>
                         <input class="card" id="about.name" name="about.name" placeholder="Nome">
                     </div>
-                    <div class="field">
+                    <!-- <div class="field">
                         <label for="about.portrait">Ritratto (URL)</label>
                         <input class="card" id="about.portrait" name="about.portrait"
                             placeholder="/assets/images/davide.jpg">
@@ -210,7 +216,7 @@
                             <button type="button" class="btn" id="upload-portrait">Carica immagine</button>
                             <span class="muted" id="portrait-upload-status"></span>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="field">
                     <label for="about.bio">Bio</label>
