@@ -12,6 +12,13 @@ function applyContent(data) {
         return [];
     };
 
+    const setImgSafe = (el, url) => {
+        const test = new Image();
+        test.onload = () => el.setAttribute('src', url);
+        test.onerror = () => console.warn('IMG 404:', url);
+        test.src = url;
+    };
+
 
     // testo/href/src
     document.querySelectorAll('[data-content]').forEach(el => {
@@ -20,7 +27,7 @@ function applyContent(data) {
     });
     document.querySelectorAll('[data-src]').forEach(el => {
         const val = getByPath(data, el.dataset.src);
-        if (val) el.setAttribute('src', resolveUrl(val));
+        if (val) setImgSafe('src', resolveUrl(val));
     });
     document.querySelectorAll('[data-href]').forEach(el => {
         const val = getByPath(data, el.dataset.href);
