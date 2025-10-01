@@ -46,7 +46,7 @@ async function ensureDoc() {
                 { title: "Programmazione", text: "Piani progressivi basati su evidenze e feedback." },
                 { title: "Valutazione Posturale", text: "Screening posturale e consigli pratici." }
             ],
-            contact: { email: "contatto@example.com", phone: "+39 000 000 0000", instagram: "https://instagram.com/username", location: "Torino, Italia" }
+            contact: { email: "contatto@example.com", phone: "+39 345 929 6330", instagram: "https://www.instagram.com/davidestabbio_personalcoach/", location: "Torino, Italia" }
         });
     }
 }

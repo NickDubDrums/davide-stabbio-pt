@@ -5,11 +5,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Editor — Area riservata</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <meta name="theme-color" content="#0b0b0d">
     <meta name="robots" content="noindex,nofollow">
 
     <link href="https://api.fontshare.com/v2/css?f[]=supreme@300,400,500,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/theme-dark-gold.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/theme-dark-gold.css">
     <style>
         .tabs {
             display: flex;
@@ -115,44 +120,30 @@
 <body>
     <header class="site-header">
         <div class="container nav">
-            <a class="brand" href="/"><span class="badge-gold">DS</span> Davide Stabbio</a>
+            <a class="brand" href="./"><span class="img-cont"><img src="assets/images/logo.png" alt="logo"></span>
+                Davide
+                Stabbio</a>
             <nav><a class="link-underline" href="/">← Torna al sito</a></nav>
         </div>
     </header>
 
     <main class="section container">
-        <!-- Gate -->
-        <section id="gate" class="surface" style="padding:24px; max-width:880px; margin:auto;">
+        <!-- Gate a singola password -->
+        <section id="gate" class="surface" style="padding:24px; max-width:760px; margin:auto;">
             <h1 style="margin-top:0;">Editor — Accesso</h1>
-            <form id="login-form" class="grid">
-                <input class="card" type="password" name="password" placeholder="Password" required>
+            <form id="password-form" class="grid" autocomplete="off">
+                <input class="card" type="password" id="pwd" placeholder="Password" required>
                 <button class="btn btn-primary" type="submit">Entra</button>
             </form>
             <p id="status" class="muted" style="margin-top:12px;"></p>
-            <details style="margin-top:10px;">
-                <summary class="muted">Opzione extra sicurezza</summary>
-                <p class="muted">Puoi richiedere anche un token nell'URL (es. <code>?k=...</code>). Vedi
-                    <code>/js/editor.js</code>.
-                </p>
-            </details>
         </section>
 
         <!-- App -->
         <section id="app" class="surface" style="padding:24px; max-width:1000px; margin:auto;" hidden>
             <h1 style="margin:0 0 8px;">Editor contenuti</h1>
-            <p class="muted">Modifica i campi e poi scarica <code>content.json</code>. Caricalo su GitHub nella cartella
-                <code>/data/</code>.
-            </p>
-
-            <div class="toolbar">
-                <div>
-                    <button id="download" class="btn btn-primary">Scarica content.json</button>
-                    <label class="btn" style="margin-left:8px;">
-                        <input id="import" type="file" accept="application/json" hidden> Importa JSON…
-                    </label>
-                </div>
-                <small class="muted">Suggerimento: aggiorna immagini usando URL (Instagram/CDN). Nessun upload diretto
-                    su GitHub Pages.</small>
+            <div>
+                <button id="save-rt" class="btn" style="margin-left:8px;">💾 Salva online</button>
+                <span id="save-status" class="muted" style="margin-left:8px;"></span>
             </div>
 
             <div class="tabs" role="tablist">
@@ -160,6 +151,9 @@
                     aria-selected="true">Home</button>
                 <button class="tab-btn" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false">Su
                     di me</button>
+                <button class="tab-btn" role="tab" id="tab-contact" aria-controls="panel-contact"
+                    aria-selected="false">Contatti</button>
+
             </div>
 
             <!-- HOME -->
@@ -187,6 +181,11 @@
                 <div class="field">
                     <label for="hero.image">Immagine Hero (URL)</label>
                     <input class="card" id="hero.image" name="hero.image" placeholder="/assets/images/hero.jpg">
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                        <input type="file" id="heroImgFile" accept="image/*">
+                        <button type="button" class="btn" id="upload-hero">Carica immagine</button>
+                        <span class="muted" id="hero-upload-status"></span>
+                    </div>
                 </div>
 
                 <hr class="gold" style="margin:20px 0;">
@@ -206,6 +205,11 @@
                         <label for="about.portrait">Ritratto (URL)</label>
                         <input class="card" id="about.portrait" name="about.portrait"
                             placeholder="/assets/images/davide.jpg">
+                        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                            <input type="file" id="portraitFile" accept="image/*">
+                            <button type="button" class="btn" id="upload-portrait">Carica immagine</button>
+                            <span class="muted" id="portrait-upload-status"></span>
+                        </div>
                     </div>
                 </div>
                 <div class="field">
@@ -218,10 +222,37 @@
                 <div id="cv-list-editor" class="cv-list"></div>
                 <button id="cv-add" class="big-add">+ Aggiungi voce</button>
             </section>
+
+            <!-- CONTACT -->
+            <section class="panel" id="panel-contact" role="tabpanel" aria-labelledby="tab-contact" aria-hidden="true">
+                <h2>Contatti</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="contact.email">Email</label>
+                        <input class="card" id="contact.email" name="contact.email" placeholder="contatto@example.com">
+                    </div>
+                    <div class="field">
+                        <label for="contact.phone">Telefono</label>
+                        <input class="card" id="contact.phone" name="contact.phone" placeholder="+39 ...">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <label for="contact.instagram">Instagram (URL)</label>
+                        <input class="card" id="contact.instagram" name="contact.instagram"
+                            placeholder="https://instagram.com/...">
+                    </div>
+                    <div class="field">
+                        <label for="contact.location">Località</label>
+                        <input class="card" id="contact.location" name="contact.location" placeholder="Torino, Italia">
+                    </div>
+                </div>
+            </section>
+
         </section>
     </main>
 
-    <script src="js/editor.js"></script>
+    <script type="module" src="./js/editor.js"></script>
 </body>
 
 </html>

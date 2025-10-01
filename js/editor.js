@@ -1,238 +1,379 @@
-// === Protezione: password + (opzionale) token URL ===
-// Password DEMO: "davide-2025" (cambia!). Hash sotto.
-const ALLOWED_HASH = "7159f07226609ec6b08751b0c097447c2806dd3ba041ce6e46d4fea6c332e27e";
+// js/editor.js  — Editor con gate a password + RTDB load/save (niente Auth Firebase)
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
+import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js';
+import { getStorage, ref as sref, uploadBytes, getDownloadURL, deleteObject }
+    from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js';
 
-// (Opzionale) Segreto URL: imposta SECRET_KEY_HASH e poi apri /editor.html?k=<chiave-plain>
-// Lascia vuoto per disabilitare.
-const SECRET_KEY_HASH = ""; // es: "e3b0c442..." (sha256 di "mio-token-url")
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const $app = $('#app');
-const $gate = $('#gate');
-const $status = $('#status');
+// ----- Gate a password (client-side) -----
+const PASSWORD = 'stabbi11'; // richiesto dall'utente — NB: è visibile lato client
 
-let state = null; // content.json in memoria
+const gate = $('#gate');
+const appEl = $('#app');
+const statusEl = $('#status');
 
-async function sha256hex(str) {
-    const enc = new TextEncoder().encode(str);
-    const buf = await crypto.subtle.digest('SHA-256', enc);
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
+// ----- Firebase RTDB -----
+let app = null, db = null, contentRef = null;
+let storage = null;
 
-function qs(key) {
-    const p = new URLSearchParams(location.search);
-    return p.get(key);
-}
 
-async function checkUrlKey() {
-    if (!SECRET_KEY_HASH) return true; // disattivato
-    const k = qs('k');
-    if (!k) return false;
-    const h = await sha256hex(k);
-    return h === SECRET_KEY_HASH;
-}
+// stato editor
+let state = null;
 
-$('#login-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    $status.textContent = 'Verifica…';
-    const okToken = await checkUrlKey();
-    if (!okToken) { $status.textContent = 'Link non valido.'; return; }
+// ---- Utility ----
+const getByPath = (obj, path) =>
+    path.split('.').reduce((acc, key) => (acc && acc[key] != null ? acc[key] : null), obj);
 
-    const pwd = e.target.password.value;
-    const hash = await sha256hex(pwd);
-    if (hash === ALLOWED_HASH) {
-        $gate.hidden = true;
-        $app.hidden = false;
-        await loadJSON();
-        initEditor();
-    } else {
-        $status.textContent = 'Password errata.';
-    }
-});
-
-async function loadJSON() {
-    const res = await fetch('/data/content.json', { cache: 'no-store' });
-    state = await res.json();
-}
-
-// ---------- UI BINDING ----------
-function setVal(name, value) {
-    const el = document.getElementById(name);
-    if (el) el.value = value ?? '';
-}
-function getVal(name) {
-    const el = document.getElementById(name);
-    return el ? el.value.trim() : '';
-}
-
-function bindHome() {
-    setVal('hero.headline', state.hero?.headline);
-    setVal('hero.subheadline', state.hero?.subheadline);
-    setVal('hero.ctaText', state.hero?.ctaText);
-    setVal('hero.ctaLink', state.hero?.ctaLink);
-    setVal('hero.image', state.hero?.image);
-
-    // Servizi (fissi): genera blocchi di input per ciascun item
-    const wrap = document.getElementById('services-editor');
-    wrap.innerHTML = (state.services || []).map((s, i) => `
-    <div class="card" style="padding:16px;">
-      <div class="field">
-        <label>Servizio ${i + 1} — Titolo</label>
-        <input class="card" id="services.${i}.title" value="${escapeHtml(s.title || '')}">
-      </div>
-      <div class="field">
-        <label>Servizio ${i + 1} — Testo</label>
-        <textarea class="card" id="services.${i}.text" rows="3">${escapeHtml(s.text || '')}</textarea>
-      </div>
-    </div>
-  `).join('');
-}
-
-function bindAbout() {
-    setVal('about.name', state.about?.name);
-    setVal('about.portrait', state.about?.portrait);
-    setVal('about.bio', state.about?.bio);
-    renderCV();
-}
-
-function renderCV() {
-    const list = document.getElementById('cv-list-editor');
-    const cv = state.about?.cv || [];
-    list.innerHTML = cv.map((item, idx) => `
-    <div class="cv-item" data-idx="${idx}">
-      <div class="row-3">
-        <div class="field">
-          <label>Titolo (h3)</label>
-          <input class="card" data-k="title" value="${escapeHtml(item.title || '')}">
-        </div>
-        <div class="field">
-          <label>Sottotitolo</label>
-          <input class="card" data-k="subtitle" value="${escapeHtml(item.subtitle || '')}">
-        </div>
-        <div class="field">
-          <label>Paragrafo</label>
-          <input class="card" data-k="text" value="${escapeHtml(item.text || '')}">
-        </div>
-      </div>
-      <div class="cv-actions">
-        <button class="btn" data-action="save">Salva</button>
-        <button class="btn" data-action="remove">Elimina</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// Escaping basico per iniettare in HTML
-function escapeHtml(s = '') {
-    return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}
-
-function initEditor() {
-    // Tabs
-    const tabs = $$('.tab-btn');
-    const panels = $$('.panel');
-    function show(id) {
-        tabs.forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + id)));
-        panels.forEach(p => p.setAttribute('aria-hidden', String(p.id !== 'panel-' + id)));
-    }
-    tabs.forEach(btn => btn.addEventListener('click', () => show(btn.id.replace('tab-', ''))));
-
-    // Bind initial
-    bindHome();
-    bindAbout();
-
-    // Inputs generali (one-way update in state)
-    document.getElementById('panel-home').addEventListener('input', (e) => {
-        const el = e.target;
-        if (!el.id) return;
-        setByPath(state, el.id, el.value);
-    });
-    document.getElementById('panel-about').addEventListener('input', (e) => {
-        const el = e.target;
-        if (!el.id) return;
-        setByPath(state, el.id, el.value);
-    });
-
-    // Servizi (fissi)
-    document.getElementById('services-editor').addEventListener('input', (e) => {
-        const el = e.target;
-        if (!el.id) return;
-        setByPath(state, el.id, el.value);
-    });
-
-    // CV save/remove
-    document.getElementById('cv-list-editor').addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-action]');
-        if (!btn) return;
-        const item = e.target.closest('.cv-item');
-        const idx = parseInt(item.dataset.idx, 10);
-        if (btn.dataset.action === 'remove') {
-            state.about.cv.splice(idx, 1);
-            renderCV();
-            toast('Voce rimossa');
-        } else if (btn.dataset.action === 'save') {
-            const inputs = item.querySelectorAll('input[data-k]');
-            inputs.forEach(inp => state.about.cv[idx][inp.dataset.k] = inp.value.trim());
-            toast('Voce salvata');
-        }
-    });
-
-    // Aggiungi CV
-    $('#cv-add').addEventListener('click', () => {
-        state.about = state.about || {};
-        state.about.cv = state.about.cv || [];
-        state.about.cv.push({ title: "Titolo", subtitle: "", text: "" });
-        renderCV();
-    });
-
-    // Download / Import
-    $('#download').addEventListener('click', downloadJSON);
-    $('#import').addEventListener('change', importJSON);
-}
-
-function setByPath(obj, path, val) {
+const setByPath = (obj, path, value) => {
     const keys = path.split('.');
-    let cur = obj;
-    for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i];
-        cur[k] ??= {};
-        cur = cur[k];
-    }
-    cur[keys[keys.length - 1]] = val;
-}
+    let curr = obj;
+    keys.slice(0, -1).forEach(k => {
+        if (typeof curr[k] !== 'object' || curr[k] == null) curr[k] = {};
+        curr = curr[k];
+    });
+    curr[keys[keys.length - 1]] = value;
+};
 
-function downloadJSON() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'content.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
-}
-
-async function importJSON(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    try {
-        state = JSON.parse(text);
-        bindHome(); bindAbout();
-        toast('JSON importato');
-    } catch {
-        alert('JSON non valido');
-    }
-}
-
-// mini toast
 function toast(msg) {
     const el = document.createElement('div');
     el.textContent = msg;
     Object.assign(el.style, {
         position: 'fixed', bottom: '18px', left: '50%', transform: 'translateX(-50%)',
-        background: '#16161a', color: 'var(--text)', border: '1px solid var(--border)',
-        borderRadius: '10px', padding: '10px 14px', zIndex: 9999, boxShadow: '0 6px 30px #0007'
+        background: '#16161a', color: '#fff', padding: '10px 14px', borderRadius: '8px',
+        border: '1px solid #2a2a2e', zIndex: 9999
     });
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1600);
+    setTimeout(() => el.remove(), 1800);
 }
+
+function toArray(x) {
+    if (Array.isArray(x)) return x;
+    if (x && typeof x === 'object') {
+        return Object.keys(x).sort((a, b) => Number(a) - Number(b)).map(k => x[k]);
+    }
+    return [];
+}
+
+
+// ---- Init Firebase ----
+async function initFirebase() {
+    const { firebaseConfig } = await import('./firebase-config.js');
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    contentRef = ref(db, 'site/content');
+    storage = getStorage(app);
+}
+
+
+// ---- Load iniziale (RTDB -> fallback JSON locale) ----
+async function loadState() {
+    await initFirebase();
+    try {
+        const snap = await get(contentRef);
+        if (snap.exists()) {
+            state = snap.val();
+            return;
+        }
+    } catch (e) {
+        console.warn('RTDB get fallito, uso fallback locale', e);
+    }
+    // fallback locale
+    const res = await fetch('data/content.json', { cache: 'no-store' });
+    state = await res.json();
+}
+
+// ---- Tabs: Home / About ----
+function wireTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.id.replace('tab-', ''); // 'home' | 'about'
+            // toggle stato tab
+            document.querySelectorAll('.tab-btn')
+                .forEach(t => t.setAttribute('aria-selected', String(t === btn)));
+            // toggle pannelli
+            document.querySelectorAll('.panel')
+                .forEach(p => p.setAttribute('aria-hidden', String(p.id !== 'panel-' + id)));
+        });
+    });
+}
+
+
+// ---- Binding bidirezionale: inputs <-> state ----
+function bindBasicInputs() {
+    // Precompila e collega TUTTI gli input/textarea con attributo name="a.b.c"
+    $$('input[name], textarea[name]').forEach(el => {
+        const path = el.name;
+        const val = getByPath(state, path);
+        if (val != null) {
+            if (el.type === 'checkbox') el.checked = !!val;
+            else el.value = val;
+        }
+        const handler = () => {
+            if (el.type === 'checkbox') setByPath(state, path, !!el.checked);
+            else setByPath(state, path, el.value);
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+    });
+}
+
+// ---- Servizi (fissi) ----
+function renderServicesEditor() {
+    const root = $('#services-editor');
+    if (!root) return;
+    root.innerHTML = '';
+
+    state.services = toArray(state.services);
+    state.services.forEach((svc, i) => {
+        const item = document.createElement('div');
+        item.className = 'cv-item'; // stesso stile card
+        item.innerHTML = `
+      <div class="field">
+        <label>Servizio #${i + 1} — Titolo</label>
+        <input class="card" data-path="services.${i}.title" placeholder="Titolo">
+      </div>
+      <div class="field">
+        <label>Descrizione</label>
+        <textarea class="card" rows="3" data-path="services.${i}.text" placeholder="Descrizione"></textarea>
+      </div>
+    `;
+        root.appendChild(item);
+    });
+
+    // binding locali
+    $$('[data-path]', root).forEach(el => {
+        const path = el.getAttribute('data-path');
+        const val = getByPath(state, path);
+        if (el.tagName === 'TEXTAREA') el.value = val || '';
+        else el.value = val ?? '';
+        const onChange = () => setByPath(state, path, el.value);
+        el.addEventListener('input', onChange);
+        el.addEventListener('change', onChange);
+    });
+}
+
+// ---- CV (lista dinamica in about.cv) ----
+function renderCVEditor() {
+    const root = $('#cv-list-editor');
+    if (!root) return;
+    root.innerHTML = '';
+    if (!state.about) state.about = {};
+    state.about.cv = toArray(state.about.cv);
+
+    state.about.cv.forEach((cv, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'cv-item';
+        wrap.innerHTML = `
+      <div class="row">
+        <div class="field">
+          <label>Titolo</label>
+          <input class="card" data-path="about.cv.${i}.title" placeholder="Titolo">
+        </div>
+        <div class="field">
+          <label>Sottotitolo</label>
+          <input class="card" data-path="about.cv.${i}.subtitle" placeholder="Sottotitolo">
+        </div>
+      </div>
+      <div class="field">
+        <label>Testo</label>
+        <textarea class="card" rows="3" data-path="about.cv.${i}.text" placeholder="Descrizione"></textarea>
+      </div>
+      <div class="cv-actions">
+        <button type="button" class="btn" data-remove="${i}">Elimina</button>
+      </div>
+    `;
+        root.appendChild(wrap);
+    });
+
+    // binding campi
+    $$('[data-path]', root).forEach(el => {
+        const path = el.getAttribute('data-path');
+        const val = getByPath(state, path);
+        if (el.tagName === 'TEXTAREA') el.value = val || '';
+        else el.value = val ?? '';
+        const onChange = () => setByPath(state, path, el.value);
+        el.addEventListener('input', onChange);
+        el.addEventListener('change', onChange);
+    });
+
+    // elimina voce
+    $$('button[data-remove]', root).forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-remove'));
+            state.about.cv.splice(idx, 1);
+            renderCVEditor();
+        });
+    });
+
+    // aggiungi voce
+    $('#cv-add')?.addEventListener('click', () => {
+        state.about.cv.push({ title: '', subtitle: '', text: '' });
+        renderCVEditor();
+    }, { once: true }); // ricollegheremo un listener nuovo a ogni render
+}
+
+// ---- Pulsanti Download / Import / Salva online ----
+function wireToolbar() {
+
+    const heroBtn = $('#upload-hero');
+    const heroInp = $('#heroImgFile');
+    const heroStatus = $('#hero-upload-status');
+
+    const portraitBtn = $('#upload-portrait');
+    const portraitInp = $('#portraitFile');
+    const portraitStatus = $('#portrait-upload-status');
+
+    // Download JSON (tutti i pulsanti con id=download)
+    $$('#download').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'content.json';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+    });
+
+    // Import JSON (tutti gli input file con id=import)
+    $$('#import').forEach(inp => {
+        inp.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const txt = await file.text();
+                const obj = JSON.parse(txt);
+                state = obj;
+                bindBasicInputs();     // ripopola i campi base
+                renderServicesEditor();
+                renderCVEditor();
+                toast('Import completato');
+            } catch (err) {
+                console.error(err);
+                toast('File non valido');
+            } finally {
+                e.target.value = '';
+            }
+        });
+    });
+
+    // Salva su Realtime Database
+    $('#save-rt')?.addEventListener('click', async () => {
+        const label = $('#save-status');
+        if (label) label.textContent = 'Salvataggio…';
+        try {
+            await set(contentRef, { ...state, _updatedAt: new Date().toISOString() });
+            if (label) label.textContent = 'Fatto ✔';
+            toast('Contenuti salvati online');
+        } catch (err) {
+            console.error(err);
+            if (label) label.textContent = 'Errore';
+            toast('Errore salvataggio');
+        } finally {
+            setTimeout(() => { if (label) label.textContent = ''; }, 1800);
+        }
+    });
+
+    // --- Upload HERO
+    heroBtn?.addEventListener('click', async () => {
+        try {
+            const file = heroInp.files?.[0];
+            if (!file) return (heroStatus.textContent = 'Seleziona un file');
+            heroStatus.textContent = 'Caricamento…';
+            const prev = state?.hero?.image || '';
+            const url = await uploadImageAndGetUrl(file, 'images/hero', prev);
+            setByPath(state, 'hero.image', url);
+            $('#hero.image').value = url;
+            await set(contentRef, { ...state, _updatedAt: new Date().toISOString() }); // ✅
+            heroStatus.textContent = 'Fatto ✔';
+        } catch (e) {
+            console.error(e);
+            heroStatus.textContent = `Errore: ${e?.code || e?.message || 'upload_failed'}`;
+        } finally {
+            setTimeout(() => (heroStatus.textContent = ''), 1500);
+            if (heroInp) heroInp.value = '';
+        }
+    });
+
+    // --- Upload RITRATTO
+    portraitBtn?.addEventListener('click', async () => {
+        try {
+            const file = portraitInp.files?.[0];
+            if (!file) return (portraitStatus.textContent = 'Seleziona un file');
+            portraitStatus.textContent = 'Caricamento…';
+            const prev = state?.about?.portrait || '';
+            const url = await uploadImageAndGetUrl(file, 'images/portrait', prev);
+            setByPath(state, 'about.portrait', url);
+            $('#about.portrait').value = url;
+            await set(contentRef, { ...state, _updatedAt: new Date().toISOString() });
+            portraitStatus.textContent = 'Fatto ✔';
+        } catch (e) {
+            console.error(e);
+            heroStatus.textContent = `Errore: ${e?.code || e?.message || 'upload_failed'}`;
+        } finally {
+            setTimeout(() => (portraitStatus.textContent = ''), 1500);
+            if (portraitInp) portraitInp.value = '';
+        }
+    });
+
+
+}
+
+function fileExt(name = '') {
+    const m = String(name).match(/\.(\w+)(?:$|\?)/);
+    return m ? m[1].toLowerCase() : 'jpg';
+}
+
+async function deleteIfFromOurBucket(url) {
+    try {
+        if (!url) return;
+        if (!/firebasestorage\.(googleapis|app)\.com/i.test(url)) return;
+        const r = sref(storage, url);
+        await deleteObject(r);
+    } catch (e) {
+        console.warn('Delete old image skipped:', e?.message || e);
+    }
+}
+
+async function uploadImageAndGetUrl(file, folder, prevUrl) {
+    if (!file) throw new Error('Nessun file selezionato');
+    const safeFolder = folder.replace(/[^a-z0-9/_-]+/gi, '_');
+    const ts = Date.now();
+    const ext = (file.name.match(/\.(\w+)(?:$|\?)/)?.[1] || 'jpg').toLowerCase();
+    const path = `${safeFolder}/${ts}.${ext}`;
+    const r = sref(storage, path);
+    await uploadBytes(r, file);
+    await deleteIfFromOurBucket(prevUrl); // pulizia PRIMA di salvare lo stato
+    return await getDownloadURL(r);
+}
+
+
+// ---- Inizializzazione Editor ----
+async function initEditor() {
+    await loadState();
+    bindBasicInputs();
+    wireTabs();                // <--- AGGIUNTA
+    renderServicesEditor();
+    renderCVEditor();
+    wireToolbar();
+}
+
+
+// ---- Login form (una sola password) ----
+$('#password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = '';
+    const pwd = $('#pwd')?.value?.trim() || '';
+    if (pwd !== PASSWORD) {
+        statusEl.textContent = 'Password errata';
+        return;
+    }
+    // ok
+    gate.hidden = true;
+    appEl.hidden = false;
+    await initEditor();
+});

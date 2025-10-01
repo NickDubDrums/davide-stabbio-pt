@@ -5,6 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Su di me — Davide Stabbio</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <meta name="theme-color" content="#0b0b0d">
 
     <link href="https://api.fontshare.com/v2/css?f[]=supreme@300,400,500,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
@@ -15,7 +20,9 @@
 <body>
     <header class="site-header">
         <div class="container nav">
-            <a class="brand" href="./"><span class="badge-gold">DS</span> Davide Stabbio</a>
+            <a class="brand" href="./"><span class="img-cont"><img src="assets/images/logo.png" alt="logo"></span>
+                Davide
+                Stabbio</a>
             <nav class="nav-desktop">
                 <a class="navlink link-underline" href="about.html">Su di me</a>
                 <a class="navlink link-underline" href="contact.html">Contatti</a>
@@ -25,17 +32,19 @@
                     class="nav-toggle-bar"></span>
             </button>
         </div>
-        <aside id="nav-panel" class="offcanvas" aria-hidden="true">
-            <nav class="offcanvas-nav">
-                <a class="navlink link-underline" href="about.html">Su di me</a>
-                <a class="navlink link-underline" href="contact.html">Contatti</a>
-            </nav>
-        </aside>
-        <div class="backdrop" data-close-nav></div>
+
     </header>
+    <aside id="nav-panel" class="offcanvas" aria-hidden="true">
+        <nav class="offcanvas-nav">
+            <a class="navlink link-underline" href="about.html">Su di me</a>
+            <a class="navlink link-underline" href="contact.html">Contatti</a>
+        </nav>
+    </aside>
+    <div class="backdrop" data-close-nav></div>
+
 
     <main class="section">
-        <div class="container grid" style="grid-template-columns: 240px 1fr; gap:28px;">
+        <div class="container grid about-grid" style="grid-template-columns: 240px 1fr; gap:28px;">
             <!-- portrait: percorso relativo -->
             <img class="surface" alt="Ritratto di Davide" data-src="about.portrait"
                 src="assets/images/davide-portrait.jpg" style="width:100%; height:auto; border-radius: var(--radius);"
@@ -59,7 +68,9 @@
     <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
     <script type="module" src="js/content.js"></script>
     <script src="js/scroll.js"></script>
+    <script src="js/parallax.js"></script>
     <script src="js/ui.js"></script>
+
 </body>
 
 </html>
