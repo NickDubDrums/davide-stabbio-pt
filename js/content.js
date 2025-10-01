@@ -26,8 +26,9 @@ function applyContent(data) {
         if (val != null) el.textContent = val;
     });
     document.querySelectorAll('[data-src]').forEach(el => {
+        if (el.hasAttribute('data-lock-src')) return; // non sovrascrivere
         const val = getByPath(data, el.dataset.src);
-        if (val) setImgSafe('src', resolveUrl(val));
+        if (val) setImgSafe(el, resolveUrl(val));
     });
     document.querySelectorAll('[data-href]').forEach(el => {
         const val = getByPath(data, el.dataset.href);
