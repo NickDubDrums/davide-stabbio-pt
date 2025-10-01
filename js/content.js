@@ -12,6 +12,7 @@ function applyContent(data) {
         return [];
     };
 
+
     // testo/href/src
     document.querySelectorAll('[data-content]').forEach(el => {
         const val = getByPath(data, el.dataset.content);
@@ -19,17 +20,17 @@ function applyContent(data) {
     });
     document.querySelectorAll('[data-src]').forEach(el => {
         const val = getByPath(data, el.dataset.src);
-        if (val) el.setAttribute('src', val);
+        if (val) el.setAttribute('src', resolveUrl(val));
     });
     document.querySelectorAll('[data-href]').forEach(el => {
         const val = getByPath(data, el.dataset.href);
-        if (val) el.setAttribute('href', val);
+        if (val) el.setAttribute('href', resolveUrl(val));
     });
 
     // HERO bg — accetta URL Storage e data URL (blocca link tipo Instagram page)
     const heroBg = document.getElementById('hero-bg');
     if (heroBg && data.hero?.image) {
-        const url = String(data.hero.image).trim();
+        const url = resolveUrl(data.hero.image);
         const ok = /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i.test(url)
             || /firebasestorage\.(googleapis|app)\.com/i.test(url)
             || url.startsWith('data:image');
@@ -63,6 +64,29 @@ function applyContent(data) {
     document.querySelectorAll('#services [data-reveal], #cv-list [data-reveal]')
         .forEach(el => { el.classList.add('is-visible'); el.style.opacity = '1'; el.style.transform = 'none'; });
 }
+
+// GH Pages helper: se l'URL è root-relative ("/..."), prefissa la repo ("/davide-stabbio-pt")
+function ghBasePath() {
+    // se è un Project Page (username.github.io/repo)
+    if (location.hostname.endsWith('github.io')) {
+        const parts = location.pathname.split('/').filter(Boolean);
+        // "davide-stabbio-pt" è di solito la prima cartella del path su GH Pages
+        return parts.length ? '/' + parts[0] : '';
+    }
+    return ''; // in locale o su dominio tuo, nessun prefisso
+}
+
+function resolveUrl(u) {
+    if (!u) return u;
+    const url = String(u).trim();
+    // assoluti o data-URL: lasciali stare
+    if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
+    // root-relative: aggiungi prefisso repo su GH Pages
+    if (url.startsWith('/')) return ghBasePath() + url;
+    // relativo: va già bene (assets/..., css/..., ecc.)
+    return url;
+}
+
 
 (async () => {
     try {
