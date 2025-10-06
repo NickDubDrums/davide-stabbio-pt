@@ -50,7 +50,7 @@ function applyContent(data) {
     if (cvWrap && data.about?.cv != null) {
         const cv = toArray(data.about.cv);
         cvWrap.innerHTML = cv.map(item => `
-      <li class="card" data-reveal="up">
+      <li class="card spotlight" data-reveal="up">
         <h3>${item.title || ''}</h3>
         ${item.subtitle ? `<div class="muted">${item.subtitle}</div>` : ''}
         ${item.text ? `<p>${item.text}</p>` : ''}
@@ -62,7 +62,7 @@ function applyContent(data) {
     if (wrap && data.services != null) {
         const services = toArray(data.services);
         wrap.innerHTML = services.map(s => `
-      <article class="card" data-reveal="up">
+      <article class="card spotlight" data-reveal="up">
         <h3>${s.title || ''}</h3>
         <p>${s.text || ''}</p>
       </article>`).join('');

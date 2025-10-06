@@ -75,3 +75,74 @@
     box-shadow: 0 20px 60px #efbf041a, inset 0 1px 0 #ffffff08;
     border-color: #ffffff14;
 }
+
+
+/* === Spotlight hover (interno + bordo che segue anche da fuori) === */
+.spotlight {
+    position: relative;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    overflow: hidden;
+    /* solo il layer base del contenuto; niente più radial nel background */
+    background: linear-gradient(180deg, #141417, #101014) padding-box;
+    transition: border-color .2s ease, box-shadow .2s ease;
+    will-change: background-position, background-image;
+}
+
+/* Luce morbida interna (già ok) */
+.spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(var(--innerR, 220px) circle at var(--mx, -200px) var(--my, -200px),
+            #efbf0420 0%, transparent 60%);
+    pointer-events: none;
+    opacity: var(--op, 0);
+    transition: opacity .22s ease;
+}
+
+/* Glow SOLO sul bordo: layer separato con mask ad anello */
+.spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(var(--borderR, 160px) circle at var(--mx, -200px) var(--my, -200px),
+            color-mix(in srgb, var(--gold) 60%, transparent) 0%,
+            transparent 65%);
+    /* maschera: mostra solo l’anello del bordo (spessore = 1px) */
+    padding: 1px;
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: var(--bop, 0);
+    /* controllata via JS in base alla distanza */
+    transition: opacity .2s ease;
+}
+
+/* Stato hover/focus: piccolo accento */
+.spotlight:is(:hover, :focus-within) {
+    --op: 1;
+    border-color: #ffffff22;
+    box-shadow: inset 0 1px 0 #ffffff0a;
+}
+
+/* Se hai ancora la regola .card:hover, spegni l’ombra esterna sulle spotlight */
+.spotlight.card:hover {
+    box-shadow: inset 0 1px 0 #ffffff08;
+    border-color: #ffffff22;
+}
+
+/* Riduzione motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .spotlight,
+    .spotlight::before,
+    .spotlight::after {
+        transition: none !important;
+    }
+}
